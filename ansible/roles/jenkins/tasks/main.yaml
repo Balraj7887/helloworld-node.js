@@ -1,0 +1,33 @@
+- name: Update APT package manager repositories cache
+  become: yes
+  apt:
+   update_cache: yes
+
+- name: install openjdk Java
+  become: yes
+  apt:
+   name: "{{item}}"
+   state: present
+  with_items:
+   openjdk-8-jdk
+
+
+- name: ensure the jenkins apt repository key is installed
+  apt_key: url=https://pkg.jenkins.io/debian-stable/jenkins.io.key state=present
+  become: yes
+
+- name: ensure the repository is configured
+  apt_repository: repo='deb https://pkg.jenkins.io/debian-stable binary/' state=present
+  become: yes
+
+- name: ensure jenkins is installed
+  apt: name=jenkins update_cache=yes
+  become: yes
+
+- name: changing the default port from 8080 to 36598
+  copy:
+    src: jenkins
+    dest: /etc/default/jenkins
+
+- name: restart the jenkins service to change default port
+  service: name=jenkins state=restarted
